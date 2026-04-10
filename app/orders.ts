@@ -34,6 +34,10 @@ export class CalculatePriceUseCase {
 
     let price = articles.reduce((acc, a) => acc + a.prix, 0);
 
+    const fixedDiscounts = discounts.filter(d => d.type === 'fixed');
+    const totalFixed = fixedDiscounts.reduce((acc, d) => acc + (d.amount ?? 0), 0);
+    price -= totalFixed;
+
     const percentageDiscounts = discounts.filter(d => d.type === 'percentage');
     const totalPercent = percentageDiscounts.reduce((acc, d) => acc + (d.amount ?? 0), 0);
     if (totalPercent > 0) {

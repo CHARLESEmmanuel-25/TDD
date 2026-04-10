@@ -67,6 +67,83 @@ describe('with percentage discount', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Test 3 : Remise fixe
+// ---------------------------------------------------------------------------
+
+/*
+ * Test 3 : implémentation pour faire passer le test au vert
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     let price = articles.reduce(...)
+ *     price -= 50  // valeur codée en dur
+ *     return price
+ *   }
+ * }
+ *
+ * Test 3 : après refactorisation du code
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     let price = articles.reduce(...)
+ *     const totalFixed = fixedDiscounts.reduce((acc, d) => acc + d.amount, 0)
+ *     price -= totalFixed
+ *     // ...percentage ensuite
+ *     return price
+ *   }
+ * }
+ */
+describe('with fixed discount', () => {
+  test('should calculate price with multiple fixed discounts', () => {
+    const useCase = new CalculatePriceUseCase(stub);
+    const panier: Cart = {
+      articles: [
+        { type: 'veste', prix: 156 },
+        { type: 'veste en cuire', prix: 200 },
+      ],
+      discounts: [
+        { type: 'fixed', amount: 30 },
+        { type: 'fixed', amount: 20 },
+      ],
+    };
+    // 356 - 30 - 20 = 306
+    expect(useCase.execute(panier)).toBe(306);
+  });
+});
+
+
+// Test 4 : Remise fixe + pourcentage (vérification de l'ordre d'application)
+
+
+/*
+ * Test 4 : implémentation pour faire passer le test au vert
+ * L'ordre est crucial : la remise fixe doit s'appliquer AVANT le pourcentage.
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     let price = 255
+ *     price -= 5       // fixed d'abord
+ *     price -= price * 10 / 100  // pourcentage sur le prix réduit
+ *     return price     // 250 - 25 = 225
+ *   }
+ * }
+ *
+ * Test 4 : après refactorisation du code
+ * Même logique, déjà générique grâce aux étapes précédentes.
+ */
+describe('with fixed and percentage discount', () => {
+  test('should apply fixed discount before percentage', () => {
+    const useCase = new CalculatePriceUseCase(stub);
+    const panier: Cart = {
+      articles: [{ type: 'bouteille', prix: 255 }],
+      discounts: [
+        { type: 'fixed', amount: 5 },
+        { type: 'percentage', amount: 10 },
+      ],
+    };
+    // 255 - 5 = 250, puis 250 - 10% = 225
+    expect(useCase.execute(panier)).toBe(225);
+  });
+});
+
 describe('orders without discount', () => {
   test('should calculate price without discount', () => {
     const useCase = new CalculatePriceUseCase(stub);
