@@ -1,47 +1,43 @@
-import { describe,expect,test } from "vitest";
+import { describe, expect, test } from 'vitest';
+import { Cart, CalculatePriceUseCase, NotificationService } from '@/orders';
 
-
-//variables global
-
-
-
-function calculPrice(panier){
-    let prixFinal = 0;
-
-    const article =  panier.articles
-
-    for (const element of article) {
-        prixFinal += element.prix
-    }
-    return prixFinal
+// Stub : remplace le service de notification sans vérifier les appels.
+// Utilisé dans les tests qui ne s'intéressent pas au comportement de notification.
+class StubNotificationService implements NotificationService {
+  notifyPriceFinal(_price: number): void {}
 }
 
-describe('course reservation', ()=>{
+const stub = new StubNotificationService();
 
-    test('should calculate price without bound', ()=>{
+// ---------------------------------------------------------------------------
+// Test 1 : Calcul du prix sans remise
+// ---------------------------------------------------------------------------
 
-        const panier = {
-            articles:[
-                {
-                    type: 'tishirt',
-                    prix : 20
-                },
-                {
-                    type: 'pantalon',
-                    prix: 30
-                },
-                                {
-                    type: 'pantalon',
-                    prix: 2
-                }
-
-            ]
-        }
- 
-        const result = calculPrice(panier)
-
-        expect(result).toBe(52)
-
-    })
-})
-
+/*
+ * Test 1 : implémentation pour faire passer le test au vert
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     return 20 + 30 + 2  // valeur codée en dur
+ *   }
+ * }
+ *
+ * Test 1 : après refactorisation du code
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     return panier.articles.reduce((acc, article) => acc + article.prix, 0)
+ *   }
+ * }
+ */
+describe('orders without discount', () => {
+  test('should calculate price without discount', () => {
+    const useCase = new CalculatePriceUseCase(stub);
+    const panier: Cart = {
+      articles: [
+        { type: 'tshirt', prix: 20 },
+        { type: 'pantalon', prix: 30 },
+        { type: 'pantalon', prix: 2 },
+      ],
+    };
+    expect(useCase.execute(panier)).toBe(52);
+  });
+});
