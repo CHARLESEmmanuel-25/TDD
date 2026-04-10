@@ -144,6 +144,53 @@ describe('with fixed and percentage discount', () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Test 5 : Produit acheté = produit offert (freeItem)
+// ---------------------------------------------------------------------------
+
+/*
+ * Test 5 : implémentation pour faire passer le test au vert
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     let price = 54
+ *     price -= 12  // un stylo offert (codé en dur)
+ *     price -= 15  // un rad offert (codé en dur)
+ *     return price // 27
+ *   }
+ * }
+ *
+ * Test 5 : après refactorisation du code
+ * CalculatePriceUseCase {
+ *   execute(panier) {
+ *     // 1. freeItem en premier (règle métier : promos "produit" avant fixed/%)
+ *     for (const discount of freeItemDiscounts) {
+ *       const article = articles.find(a => a.type === discount.articleType)
+ *       if (article) price = Math.max(0, price - article.prix)
+ *     }
+ *     // 2. fixed, 3. percentage...
+ *   }
+ * }
+ */
+describe('with freeItem discount', () => {
+  test('should offer one item free per freeItem discount', () => {
+    const useCase = new CalculatePriceUseCase(stub);
+    const panier: Cart = {
+      articles: [
+        { type: 'stylo', prix: 12 },
+        { type: 'stylo', prix: 12 },
+        { type: 'rad', prix: 15 },
+        { type: 'rad', prix: 15 },
+      ],
+      discounts: [
+        { type: 'freeItem', articleType: 'stylo' },
+        { type: 'freeItem', articleType: 'rad' },
+      ],
+    };
+    // 54 - 12 (stylo offert) - 15 (rad offert) = 27
+    expect(useCase.execute(panier)).toBe(27);
+  });
+});
+
 describe('orders without discount', () => {
   test('should calculate price without discount', () => {
     const useCase = new CalculatePriceUseCase(stub);

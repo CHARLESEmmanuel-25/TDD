@@ -34,6 +34,15 @@ export class CalculatePriceUseCase {
 
     let price = articles.reduce((acc, a) => acc + a.prix, 0);
 
+    // 1. Promos "produit" appliquées en premier (règle métier)
+    const freeItemDiscounts = discounts.filter(d => d.type === 'freeItem');
+    for (const discount of freeItemDiscounts) {
+      const article = articles.find(a => a.type === discount.articleType);
+      if (article) {
+        price = Math.max(0, price - article.prix);
+      }
+    }
+
     const fixedDiscounts = discounts.filter(d => d.type === 'fixed');
     const totalFixed = fixedDiscounts.reduce((acc, d) => acc + (d.amount ?? 0), 0);
     price -= totalFixed;
