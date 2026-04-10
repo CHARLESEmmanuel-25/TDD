@@ -53,6 +53,15 @@ export class CalculatePriceUseCase {
       price -= (price * totalPercent) / 100;
     }
 
+    // 4. Black Friday : 50% après les autres remises, min 1€, cumulable
+    const blackFridayDiscount = discounts.find(d => d.type === 'blackfriday');
+    if (blackFridayDiscount && panier.date) {
+      const orderDate = panier.date.split('T')[0];
+      if (orderDate >= '2025-11-28' && orderDate <= '2025-11-30') {
+        price = Math.max(1, price * 0.5);
+      }
+    }
+
     return price;
   }
 }
